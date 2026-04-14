@@ -16,8 +16,51 @@ if (isset($_POST['approve'])) {
     $request_id       = (int)$_POST['request_id'];
     $borrow_record_id = (int)$_POST['borrow_record_id'];
     $book_id          = (int)$_POST['book_id'];
+    $return_date      = $_POST['return_date'];
     $admin_note       = trim($_POST['admin_note']);
-    $return_date      = date('Y-m-d');
+
+    // Update borrow record
+    $sql  = "UPDATE borrow_records SET status='returned', return_date=? WHERE id=?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "si", $return_date, $borrow_record_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        // Increase available but never exceed quantity
+        mysqli_query($conn, "
+            UPDATE books 
+            SET available = LEAST(available + 1, quantity)
+            WHERE id = $book_id
+        ");
+
+        $upd   = "UPDATE return_requests SET status='approved', admin_note=? WHERE id=?";
+        $stmt2 = mysqli_prepare($conn, $upd);
+        mysqli_stmt_bind_param($stmt2, "si", $admin_note, $request_id);
+        mysqli_stmt_execute($stmt2);
+
+        $success = "Return approved successfully!";
+    }
+}
+    // Update borrow record
+    $sql  = "UPDATE borrow_records SET status='returned', return_date=? WHERE id=?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "si", $return_date, $borrow_record_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        // Increase available but never exceed quantity
+        mysqli_query($conn, "
+            UPDATE books 
+            SET available = LEAST(available + 1, quantity)
+            WHERE id = $book_id
+        ");
+
+        $upd   = "UPDATE return_requests SET status='approved', admin_note=? WHERE id=?";
+        $stmt2 = mysqli_prepare($conn, $upd);
+        mysqli_stmt_bind_param($stmt2, "si", $admin_note, $request_id);
+        mysqli_stmt_execute($stmt2);
+
+        $success = "Return approved successfully!";
+    }
+}
 
     // Update borrow record
     $sql  = "UPDATE borrow_records SET status='returned', return_date=? WHERE id=?";
