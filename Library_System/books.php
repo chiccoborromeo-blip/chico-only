@@ -70,9 +70,19 @@ if (isset($_POST['update_book'])) {
     $author   = trim($_POST['author']);
     $quantity = (int)$_POST['quantity'];
 
+    // Get current book to calculate borrowed count
+    $current  = mysqli_fetch_assoc(mysqli_query($conn, "SELECT quantity, available FROM books WHERE id=$id"));
+    $borrowed = $current['quantity'] - $current['available'];
+    if ($borrowed < 0) $borrowed = 0;
+
+    // New available = new quantity minus currently borrowed
+    $new_available = $quantity - $borrowed;
+    if ($new_available < 0) $new_available = 0;
+    if ($new_available > $quantity) $new_available = $quantity;
+
     $sql  = "UPDATE books SET title=?, book_no=?, genre=?, author=?, quantity=?, available=? WHERE id=?";
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "sssssii", $title, $book_no, $genre, $author, $quantity, $quantity, $id);
+    mysqli_stmt_bind_param($stmt, "sssssii", $title, $book_no, $genre, $author, $quantity, $new_available, $id);
     if (mysqli_stmt_execute($stmt)) {
         header("Location: books.php?updated=1");
         exit();
