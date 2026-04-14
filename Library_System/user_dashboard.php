@@ -25,7 +25,7 @@ $records = mysqli_query($conn, "
     ORDER BY br.due_date ASC
 ");
 
-// TRENDING BOOKS — most borrowed
+// TRENDING BOOKS
 $trending = mysqli_query($conn, "
     SELECT b.id, b.title, b.author, b.genre, b.available,
            COUNT(br.id) as borrow_count
@@ -36,7 +36,7 @@ $trending = mysqli_query($conn, "
     LIMIT 6
 ");
 
-// USER'S FAVORITE GENRE — based on their borrow history
+// USER'S FAVORITE GENRE
 $fav_genre = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT b.genre, COUNT(*) as cnt
     FROM borrow_records br
@@ -47,7 +47,7 @@ $fav_genre = mysqli_fetch_assoc(mysqli_query($conn, "
     LIMIT 1
 "));
 
-// RECOMMENDED — books in same genre not yet borrowed by user
+// RECOMMENDED
 if ($fav_genre) {
     $genre = $fav_genre['genre'];
     $recommended = mysqli_query($conn, "
@@ -61,7 +61,6 @@ if ($fav_genre) {
         LIMIT 6
     ");
 } else {
-    // No history yet — show available books
     $recommended = mysqli_query($conn, "
         SELECT b.id, b.title, b.author, b.genre, b.available
         FROM books b
@@ -71,7 +70,6 @@ if ($fav_genre) {
     ");
 }
 
-// Genre colors
 function genreColor($genre) {
     $colors = [
         'Fiction'     => ['#e8eaf6', '#3f51b5'],
@@ -197,17 +195,6 @@ function genreIcon($genre) {
             color: #888;
             margin-bottom: 4px;
         }
-        .trend-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: #fff3e0;
-            color: #e65100;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
     </style>
 </head>
 <body>
@@ -220,12 +207,12 @@ function genreIcon($genre) {
         <a href="borrow_request.php">My Requests</a>
         <a href="my_borrowed.php">My Books</a>
         <a href="profile.php">Profile</a>
-        <a href="logout.php" style="color:#ff6b6b;">Logout</a>
+        <a href="#" onclick="confirmLogout(); return false;" style="color:#ff6b6b;">Logout</a>
     </div>
 </nav>
 
 <div class="container">
-    <h1 style="margin-bottom:4px;">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>! 👋</h1>
+    <h2 style="margin-bottom:4px;">Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>! 👋</h2>
     <p style="color:#888; margin-bottom:24px;">Discover books and manage your library account.</p>
 
     <!-- Stats -->
@@ -258,7 +245,6 @@ function genreIcon($genre) {
             <a href="brows_books.php">See all books →</a>
         </div>
         <p class="section-subtitle">Most borrowed books in the library</p>
-
         <div class="book-grid">
             <?php
             $trend_count = 0;
@@ -284,13 +270,13 @@ function genreIcon($genre) {
                     <div class="borrow-count">
                         🔥 <?= $book['borrow_count'] ?> times borrowed
                     </div>
-                    <div class="availability" style="color:<?= $book['available'] > 0 ? '#2e7d32' : '#c0392b' ?>">
+                    <div class="availability"
+                        style="color:<?= $book['available'] > 0 ? '#2e7d32' : '#c0392b' ?>">
                         <?= $book['available'] > 0 ? '✓ ' . $book['available'] . ' available' : '✗ Not available' ?>
                     </div>
                 </div>
             </a>
             <?php endwhile; ?>
-
             <?php if ($trend_count === 0): ?>
                 <p style="color:#888; grid-column:1/-1;">No books available yet.</p>
             <?php endif; ?>
@@ -311,7 +297,6 @@ function genreIcon($genre) {
         <?php else: ?>
             <p class="section-subtitle">Explore our latest available books</p>
         <?php endif; ?>
-
         <div class="book-grid">
             <?php
             $rec_count = 0;
@@ -334,13 +319,13 @@ function genreIcon($genre) {
                             <?= htmlspecialchars($book['genre']) ?>
                         </span>
                     <?php endif; ?>
-                    <div class="availability" style="color:<?= $book['available'] > 0 ? '#2e7d32' : '#c0392b' ?>; margin-top:8px;">
+                    <div class="availability"
+                        style="color:<?= $book['available'] > 0 ? '#2e7d32' : '#c0392b' ?>; margin-top:8px;">
                         <?= $book['available'] > 0 ? '✓ ' . $book['available'] . ' available' : '✗ Not available' ?>
                     </div>
                 </div>
             </a>
             <?php endwhile; ?>
-
             <?php if ($rec_count === 0): ?>
                 <p style="color:#888; grid-column:1/-1;">
                     No recommendations yet.
@@ -400,5 +385,6 @@ function genreIcon($genre) {
 
 </div>
 
+<?php require 'includes/toast.php'; ?>
 </body>
 </html>
