@@ -13,9 +13,29 @@ $error   = "";
 
 // PROCESS RETURN
 if (isset($_POST['return_book'])) {
-    $record_id  = (int)$_POST['record_id'];
+    $record_id   = (int)$_POST['record_id'];
     $return_date = $_POST['return_date'];
 
+    $record = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM borrow_records WHERE id = $record_id"));
+
+    if ($record) {
+        $sql  = "UPDATE borrow_records SET status='returned', return_date=? WHERE id=?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "si", $return_date, $record_id);
+
+        if (mysqli_stmt_execute($stmt)) {
+            // Never exceed quantity
+            mysqli_query($conn, "
+                UPDATE books 
+                SET available = LEAST(available + 1, quantity)
+                WHERE id = " . $record['book_id']
+            );
+            $success = "Book returned successfully!";
+        } else {
+            $error = "Failed to process return.";
+        }
+    }
+}
     // Get the record
     $record = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM borrow_records WHERE id = $record_id"));
 
