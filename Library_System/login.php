@@ -29,20 +29,19 @@ if (isset($_POST['admin_login'])) {
     $user   = mysqli_fetch_assoc($result);
 
     if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id']   = $user['id'];
-        $_SESSION['user_name'] = $user['name'];
-        $_SESSION['role']      = $user['role'];
-        $_SESSION['toast']     = [
-            'type'    => 'success',
-            'message' => 'Welcome back, ' . $user['name'] . '! You are logged in as Admin.'
-        ];
-        header("Location: dashboard.php");
-        exit();
+    $_SESSION['user_id']   = $user['id'];
+    $_SESSION['user_name'] = $user['name'];
+    $_SESSION['role']      = $user['role'];
+    $_SESSION['toast']     = [
+        'type'    => 'success',
+        'message' => 'Welcome back, ' . $user['name'] . '! Enjoy your reading. 📚'
+    ];
+    header("Location: user_dashboard.php");
+    exit();
     } else {
         $error_admin = "Invalid admin email or password.";
     }
-}
-
+    
 // USER LOGIN
 if (isset($_POST['user_login'])) {
     $email    = trim($_POST['user_email']);
