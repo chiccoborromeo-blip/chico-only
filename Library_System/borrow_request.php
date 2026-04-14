@@ -28,7 +28,6 @@ if (isset($_POST['submit_request'])) {
     } elseif ($return_date <= $borrow_date) {
         $error = "Return date must be after borrow date.";
     } else {
-        // Check if already has pending request for this book
         $check = mysqli_prepare($conn, "SELECT id FROM borrow_requests WHERE user_id=? AND book_id=? AND status='pending'");
         mysqli_stmt_bind_param($check, "ii", $user_id, $book_id);
         mysqli_stmt_execute($check);
@@ -37,7 +36,6 @@ if (isset($_POST['submit_request'])) {
         if (mysqli_stmt_num_rows($check) > 0) {
             $error = "You already have a pending request for this book!";
         } else {
-            // Check if already borrowed and not returned
             $check2 = mysqli_prepare($conn, "SELECT id FROM borrow_records WHERE user_id=? AND book_id=? AND status='borrowed'");
             mysqli_stmt_bind_param($check2, "ii", $user_id, $book_id);
             mysqli_stmt_execute($check2);
@@ -112,9 +110,9 @@ $requests = mysqli_query($conn, "
             height: 18px;
             cursor: pointer;
         }
-        .status-pending  { background:#fff3e0; color:#e65100; }
-        .status-approved { background:#e8f5e9; color:#2e7d32; }
-        .status-rejected { background:#fdecea; color:#c0392b; }
+        .status-pending  { background:#fff3e0; color:#e65100; padding:3px 10px; border-radius:20px; font-size:12px; }
+        .status-approved { background:#e8f5e9; color:#2e7d32; padding:3px 10px; border-radius:20px; font-size:12px; }
+        .status-rejected { background:#fdecea; color:#c0392b; padding:3px 10px; border-radius:20px; font-size:12px; }
     </style>
 </head>
 <body>
@@ -124,10 +122,10 @@ $requests = mysqli_query($conn, "
     <div>
         <a href="user_dashboard.php">Home</a>
         <a href="brows_books.php">Browse Books</a>
-        <a href="borrow_request.php">Borrow Request</a>
+        <a href="borrow_request.php">My Requests</a>
         <a href="my_borrowed.php">My Books</a>
         <a href="profile.php">Profile</a>
-        <a href="logout.php" style="color:#ff6b6b;">Logout</a>
+        <a href="#" onclick="confirmLogout(); return false;" style="color:#ff6b6b;">Logout</a>
     </div>
 </nav>
 
@@ -149,7 +147,6 @@ $requests = mysqli_query($conn, "
         <form method="POST">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
 
-                <!-- Book Selection -->
                 <div class="form-group">
                     <label>Select Book</label>
                     <select name="book_id" id="book_select" required
@@ -158,7 +155,7 @@ $requests = mysqli_query($conn, "
                         <option value="">-- Select a Book --</option>
                         <?php while ($book = mysqli_fetch_assoc($books)): ?>
                             <option value="<?= $book['id'] ?>"
-                                data-bookno="<?= htmlspecialchars($book['book_no']) ?>"
+                                data-bookno="<?= htmlspecialchars($book['book_no'] ?? '') ?>"
                                 data-author="<?= htmlspecialchars($book['author']) ?>">
                                 <?= htmlspecialchars($book['title']) ?> — <?= htmlspecialchars($book['author']) ?>
                                 (<?= $book['available'] ?> available)
@@ -167,7 +164,6 @@ $requests = mysqli_query($conn, "
                     </select>
                 </div>
 
-                <!-- Book No (auto filled) -->
                 <div class="form-group">
                     <label>Book No.</label>
                     <input type="text" name="book_no" id="book_no" required
@@ -175,7 +171,6 @@ $requests = mysqli_query($conn, "
                         style="background:#f5f5f5;" readonly>
                 </div>
 
-                <!-- Borrower Info -->
                 <div class="form-group">
                     <label>Borrower Name</label>
                     <input type="text" value="<?= htmlspecialchars($_SESSION['user_name']) ?>"
@@ -185,9 +180,108 @@ $requests = mysqli_query($conn, "
                 <div class="form-group">
                     <label>Purpose of Borrowing</label>
                     <input type="text" name="purpose" required
-                        placeholder="e.g. Research, Study, Personal reading">
+                        placeholder="e.g. Research, Study, Personal reading"
+                        value="<?= isset($_POST['purpose']) ? htmlspecialchars($_POST['purpose']) : '' ?>">
                 </div>
 
                 <div class="form-group">
                     <label>Preferred Borrow Date</label>
-                    <input type="date" name="borrow_date" re
+                    <input type="date" name="borrow_date" required
+                        value="<?= date('Y-m-d') ?>"
+                        min="<?= date('Y-m-d') ?>">
+                </div>
+
+                <div class="form-group">
+                    <label>Preferred Return Date</label>
+                    <input type="date" name="return_date" required
+                        value="<?= date('Y-m-d', strtotime('+14 days')) ?>"
+                        min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
+                </div>
+
+            </div>
+
+            <!-- BORROWER'S AGREEMENT -->
+            <div class="agreement-box">
+                <h4>📋 Borrower's Agreement</h4>
+                <ol>
+                    <li>I agree to take full responsibility for the borrowed book and return it in good condition.</li>
+                    <li>I agree to return the book on or before the agreed return date.</li>
+                    <li>I understand that failure to return the book on time may result in penalties or restrictions.</li>
+                    <li>I agree not to lend the borrowed book to other persons.</li>
+                    <li>I understand that lost or damaged books must be replaced or paid for.</li>
+                    <li>I agree that the library reserves the right to recall the book at any time.</li>
+                    <li>I confirm that all information I provided is true and correct.</li>
+                </ol>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="agreed" id="agreed" value="1">
+                    <label for="agreed" style="cursor:pointer; font-weight:500; color:#3f51b5;">
+                        I have read and agree to the Borrower's Agreement above.
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" name="submit_request" class="btn-primary"
+                style="width:auto; padding:10px 28px;">
+                Submit Borrow Request
+            </button>
+        </form>
+    </div>
+
+    <!-- MY REQUESTS -->
+    <div class="table-box">
+        <h3 style="margin-bottom:16px;">My Borrow Requests</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Book Title</th>
+                    <th>Book No.</th>
+                    <th>Purpose</th>
+                    <th>Borrow Date</th>
+                    <th>Return Date</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th>Admin Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (mysqli_num_rows($requests) > 0): ?>
+                    <?php while ($row = mysqli_fetch_assoc($requests)): ?>
+                    <tr>
+                        <td><?= $row['id'] ?></td>
+                        <td><?= htmlspecialchars($row['title']) ?></td>
+                        <td><?= htmlspecialchars($row['book_no'] ?? '—') ?></td>
+                        <td><?= htmlspecialchars($row['purpose']) ?></td>
+                        <td><?= $row['borrow_date'] ?></td>
+                        <td><?= $row['return_date'] ?></td>
+                        <td><?= date('M d, Y', strtotime($row['requested_at'])) ?></td>
+                        <td>
+                            <span class="status-<?= $row['status'] ?>">
+                                <?= ucfirst($row['status']) ?>
+                            </span>
+                        </td>
+                        <td style="color:#888; font-size:13px;">
+                            <?= $row['admin_note'] ? htmlspecialchars($row['admin_note']) : '—' ?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="9" style="text-align:center; color:#888;">No requests yet.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function fillBookNo(select) {
+    const option = select.options[select.selectedIndex];
+    document.getElementById('book_no').value = option.dataset.bookno || '';
+}
+</script>
+
+<?php require 'includes/toast.php'; ?>
+</body>
+</html>
