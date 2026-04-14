@@ -12,42 +12,13 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
+$error = "";
 
-$error_admin = "";
-$error_user  = "";
+if (isset($_POST['login'])) {
+    $email    = trim($_POST['email']);
+    $password = trim($_POST['password']);
 
-// ADMIN LOGIN
-if (isset($_POST['admin_login'])) {
-    $email    = trim($_POST['admin_email']);
-    $password = trim($_POST['admin_password']);
-
-    $sql  = "SELECT * FROM users WHERE email = ? AND role = 'admin'";
-    $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $email);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $user   = mysqli_fetch_assoc($result);
-
-    if ($user && password_verify($password, $user['password'])) {
-    $_SESSION['user_id']   = $user['id'];
-    $_SESSION['user_name'] = $user['name'];
-    $_SESSION['role']      = $user['role'];
-    $_SESSION['toast']     = [
-        'type'    => 'success',
-        'message' => 'Welcome back, ' . $user['name'] . '! Enjoy your reading. 📚'
-    ];
-    header("Location: user_dashboard.php");
-    exit();
-    } else {
-        $error_admin = "Invalid admin email or password.";
-    }
-    
-// USER LOGIN
-if (isset($_POST['user_login'])) {
-    $email    = trim($_POST['user_email']);
-    $password = trim($_POST['user_password']);
-
-    $sql  = "SELECT * FROM users WHERE email = ? AND role = 'user'";
+    $sql  = "SELECT * FROM users WHERE email = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "s", $email);
     mysqli_stmt_execute($stmt);
@@ -58,182 +29,349 @@ if (isset($_POST['user_login'])) {
         $_SESSION['user_id']   = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['role']      = $user['role'];
-        $_SESSION['toast']     = [
-            'type'    => 'success',
-            'message' => 'Welcome back, ' . $user['name'] . '! Enjoy your reading. 📚'
-        ];
-        header("Location: user_dashboard.php");
+
+        if ($user['role'] === 'admin') {
+            $_SESSION['toast'] = [
+                'type'    => 'success',
+                'message' => 'Welcome back, ' . $user['name'] . '! You are logged in as Admin.'
+            ];
+            header("Location: dashboard.php");
+        } else {
+            $_SESSION['toast'] = [
+                'type'    => 'success',
+                'message' => 'Welcome back, ' . $user['name'] . '! Enjoy your reading. 📚'
+            ];
+            header("Location: user_dashboard.php");
+        }
         exit();
     } else {
-        $error_user = "Invalid user email or password.";
+        $error = "Invalid email or password.";
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Library System</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        
-        .login-wrapper {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 520px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+            margin: 20px;
+        }
+
+        /* LEFT SIDE */
+        .login-left {
+            flex: 1;
+            background: linear-gradient(160deg, #5c6bc0, #3f51b5);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #f0f2f5;
-            padding: 40px 20px;
-        }
-        .login-header {
+            padding: 48px 36px;
+            color: white;
             text-align: center;
-            margin-bottom: 40px;
         }
-        .login-header h1 {
-            font-size: 32px;
-            color: #1a1a2e;
-            margin-bottom: 8px;
+
+        .login-left .logo {
+            font-size: 64px;
+            margin-bottom: 20px;
         }
-        .login-header p {
-            color: #888;
-            font-size: 15px;
+
+        .login-left h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
         }
-        .login-panels {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+
+        .login-left p {
+            font-size: 14px;
+            opacity: 0.85;
+            line-height: 1.7;
+            max-width: 240px;
+        }
+
+        .login-left .features {
+            margin-top: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
             width: 100%;
-            max-width: 860px;
         }
-        .login-panel {
-            background: white;
-            padding: 36px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        .panel-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .panel-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+
+        .login-left .feature-item {
             display: flex;
             align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .login-left .feature-item span:first-child {
+            font-size: 18px;
+        }
+
+        /* RIGHT SIDE */
+        .login-right {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
+            padding: 48px 40px;
+        }
+
+        .login-right h2 {
             font-size: 26px;
-            margin: 0 auto 12px;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+            font-weight: 600;
         }
-        .admin-icon { background: #e8eaf6; }
-        .user-icon  { background: #e1f5ee; }
-        .panel-header h2 { font-size: 20px; margin-bottom: 4px; }
-        .admin-title { color: #3f51b5; }
-        .user-title  { color: #1D9E75; }
-        .panel-header p { color: #888; font-size: 13px; }
-        .btn-admin {
+
+        .login-right .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.5;
+        }
+
+        .input-wrapper input {
             width: 100%;
-            padding: 12px;
-            background: #3f51b5;
+            padding: 12px 14px 12px 42px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #333;
+            transition: border 0.2s, box-shadow 0.2s;
+            background: #fafafa;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #5c6bc0;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(92,107,192,0.12);
+        }
+
+        .show-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.4;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .show-password:hover { opacity: 0.8; }
+
+        .error-msg {
+            background: #fdecea;
+            color: #c0392b;
+            border: 1px solid #f5c6cb;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #5c6bc0, #3f51b5);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 4px;
+            letter-spacing: 0.3px;
         }
-        .btn-admin:hover { background: #303f9f; }
-        .btn-user {
-            width: 100%;
-            padding: 12px;
-            background: #1D9E75;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: background 0.2s;
+
+        .btn-login:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
         }
-        .btn-user:hover { background: #0F6E56; }
-        @media (max-width: 600px) {
-            .login-panels { grid-template-columns: 1fr; }
+
+        .btn-login:active { transform: translateY(0); }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .register-link a {
+            color: #5c6bc0;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .register-link a:hover { text-decoration: underline; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .divider span {
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        @media (max-width: 640px) {
+            .login-left  { display: none; }
+            .login-right { padding: 36px 28px; }
         }
     </style>
 </head>
 <body>
+
 <div class="login-wrapper">
 
-    <div class="login-header">
-        <h1>📚 Library System</h1>
-        <p>Select your account type to sign in</p>
+    <!-- LEFT -->
+    <div class="login-left">
+        <div class="logo">📚</div>
+        <h1>Library System</h1>
+        <p>Your digital library management system. Borrow, track, and manage books with ease.</p>
+
+        <div class="features">
+            <div class="feature-item">
+                <span>📖</span>
+                <span>Browse thousands of books</span>
+            </div>
+            <div class="feature-item">
+                <span>🔖</span>
+                <span>Easy borrow & return</span>
+            </div>
+            <div class="feature-item">
+                <span>🔔</span>
+                <span>Track your reading history</span>
+            </div>
+            <div class="feature-item">
+                <span>⭐</span>
+                <span>Personalized recommendations</span>
+            </div>
+        </div>
     </div>
 
-    <div class="login-panels">
+    <!-- RIGHT -->
+    <div class="login-right">
+        <h2>Welcome back! 👋</h2>
+        <p class="subtitle">Sign in to your account to continue</p>
 
-        <!-- ADMIN PANEL -->
-        <div class="login-panel">
-            <div class="panel-header">
-                <div class="panel-icon admin-icon">🔐</div>
-                <h2 class="admin-title">Admin Login</h2>
-                <p>Access the admin dashboard</p>
+        <?php if ($error): ?>
+            <div class="error-msg">
+                ❌ <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" name="email" required
+                        placeholder="Enter your email"
+                        value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
+                </div>
             </div>
 
-            <?php if ($error_admin): ?>
-                <div class="alert error"><?= htmlspecialchars($error_admin) ?></div>
-            <?php endif; ?>
-
-            <form method="POST">
-                <div class="form-group">
-                    <label>Admin Email</label>
-                    <input type="email" name="admin_email" required placeholder="Enter admin email">
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" name="password" id="password" required
+                        placeholder="Enter your password">
+                    <button type="button" class="show-password" onclick="togglePassword()">👁️</button>
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="admin_password" required placeholder="Enter password">
-                </div>
-                <button type="submit" name="admin_login" class="btn-admin">
-                    Login as Admin
-                </button>
-            </form>
-        </div>
-
-        <!-- USER PANEL -->
-        <div class="login-panel">
-            <div class="panel-header">
-                <div class="panel-icon user-icon">👤</div>
-                <h2 class="user-title">Member Login</h2>
-                <p>Access your member account</p>
             </div>
 
-            <?php if ($error_user): ?>
-                <div class="alert error"><?= htmlspecialchars($error_user) ?></div>
-            <?php endif; ?>
+            <button type="submit" name="login" class="btn-login">
+                Sign In →
+            </button>
+        </form>
 
-            <form method="POST">
-                <div class="form-group">
-                    <label>Member Email</label>
-                    <input type="email" name="user_email" required placeholder="Enter your email">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="user_password" required placeholder="Enter password">
-                </div>
-                <button type="submit" name="user_login" class="btn-user">
-                    Login as Member
-                </button>
-            </form>
+        <div class="divider"><span>don't have an account?</span></div>
 
-            <p style="text-align:center; margin-top:16px; font-size:13px; color:#888;">
-                Don't have an account?
-                <a href="register.php" style="color:#1D9E75; font-weight:500;">Register here</a>
-            </p>
+        <div class="register-link">
+            New member?
+            <a href="register.php">Create an account here</a>
         </div>
-
     </div>
+
 </div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+</script>
 
 <?php require 'includes/toast.php'; ?>
 </body>
