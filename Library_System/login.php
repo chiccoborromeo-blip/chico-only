@@ -356,7 +356,7 @@ if (isset($_POST['login'])) {
             </button>
         </form>
 
-        <div class="divider"><span>don't have an account?</span></div>
+        <div class="divider"><span>Don't have an account?</span></div>
 
         <div class="register-link">
             New member?
