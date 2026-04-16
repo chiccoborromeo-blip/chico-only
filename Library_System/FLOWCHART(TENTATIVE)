@@ -1,0 +1,21 @@
+START
+↓
+LOGIN / REGISTER
+↓
+ROLE CHECK
+   ├── ADMIN
+   │      ├ Manage books
+   │      ├ Approve borrow requests
+   │      ├ Approve return requests
+   │      └ Monitor due warnings
+   │
+   └── USER
+          ├ Browse books
+          ├ Send borrow request
+          ├ View borrowed books
+          ├ Send return request
+          └ View due warnings
+↓
+LOGOUT
+↓
+END
