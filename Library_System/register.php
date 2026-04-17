@@ -1,5 +1,4 @@
-    <?php
-ini_set('session.save_path', '/Applications/XAMPP/xamppfiles/temp/');
+<?php
 session_start();
 require 'includes/db_connect.php';
 
@@ -108,6 +107,27 @@ if (isset($_POST['register'])) {
         .strength-weak   { background: #e74c3c; width: 33%; }
         .strength-medium { background: #f39c12; width: 66%; }
         .strength-strong { background: #2ecc71; width: 100%; }
+        
+        .show-password-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .show-password-container input {
+            width: auto !important;
+            margin: 0;
+            cursor: pointer;
+        }
+        .show-password-container label {
+            font-size: 13px;
+            color: #666;
+            margin: 0;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -129,7 +149,9 @@ if (isset($_POST['register'])) {
         <?php endif; ?>
 
         <?php if ($error): ?>
-            <div class="alert error"><?= htmlspecialchars($error) ?></div>
+            <div class="alert error" style="background:#ffebee; color:#c62828; padding:10px; border-radius:8px; margin-bottom:20px; font-size:14px; text-align:center;">
+                <?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
         <?php if (!$success): ?>
@@ -156,10 +178,16 @@ if (isset($_POST['register'])) {
             </div>
             <div class="form-group">
                 <label>Confirm Password</label>
-                <input type="password" name="confirm_password" required
+                <input type="password" name="confirm_password" id="confirm_password" required
                     placeholder="Re-enter your password">
             </div>
-            <button type="submit" name="register" class="btn-primary">
+
+            <div class="show-password-container">
+                <input type="checkbox" id="togglePass" onclick="togglePassword()">
+                <label for="togglePass">Show Password</label>
+            </div>
+
+            <button type="submit" name="register" class="btn-primary" style="width:100%; padding:12px; border-radius:8px; border:none; background:#1D9E75; color:white; font-weight:600; cursor:pointer;">
                 Create Account
             </button>
         </form>
@@ -173,6 +201,22 @@ if (isset($_POST['register'])) {
 </div>
 
 <script>
+// Toggle Password Visibility
+function togglePassword() {
+    const passInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm_password');
+    const isChecked = document.getElementById('togglePass').checked;
+    
+    if (isChecked) {
+        passInput.type = 'text';
+        confirmInput.type = 'text';
+    } else {
+        passInput.type = 'password';
+        confirmInput.type = 'password';
+    }
+}
+
+// Password Strength Logic
 function checkStrength(password) {
     const bar  = document.getElementById('strength-bar');
     const text = document.getElementById('strength-text');
@@ -190,18 +234,19 @@ function checkStrength(password) {
     if (/[A-Z]/.test(password) && /[0-9]/.test(password)) strength++;
 
     bar.className = 'password-strength';
-    if (strength === 1) {
-        bar.classList.add('strength-weak');
-        text.textContent = 'Weak password';
-        text.style.color = '#e74c3c';
+    
+    if (strength === 3) {
+        bar.classList.add('strength-strong');
+        text.textContent = 'Strong password';
+        text.style.color = '#2ecc71';
     } else if (strength === 2) {
         bar.classList.add('strength-medium');
         text.textContent = 'Medium password';
         text.style.color = '#f39c12';
     } else {
-        bar.classList.add('strength-strong');
-        text.textContent = 'Strong password';
-        text.style.color = '#2ecc71';
+        bar.classList.add('strength-weak');
+        text.textContent = 'Weak password';
+        text.style.color = '#e74c3c';
     }
 }
 </script>
