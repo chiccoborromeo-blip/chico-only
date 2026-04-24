@@ -1,0 +1,12 @@
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\bin\Debug\WindowsApp2.exe.config
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\bin\Debug\WindowsApp2.exe
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\bin\Debug\WindowsApp2.pdb
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\bin\Debug\WindowsApp2.xml
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\WindowsApp2.Dashboard.resources
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\WindowsApp2.Resources.resources
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\Dashboard.vbproj.GenerateResource.cache
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\Dashboard.vbproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\WindowsApp2.exe
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\WindowsApp2.xml
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\WindowsApp2.pdb
+C:\Users\User\source\repos\Library_System (1)\WindowsApp2\obj\Debug\Dashboard.vbproj.AssemblyReference.cache
