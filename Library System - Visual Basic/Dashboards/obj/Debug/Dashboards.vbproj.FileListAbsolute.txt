@@ -1,0 +1,12 @@
+C:\Users\User\source\repos\Library_System (1)\Dashboards\bin\Debug\Dashboards.exe.config
+C:\Users\User\source\repos\Library_System (1)\Dashboards\bin\Debug\Dashboards.exe
+C:\Users\User\source\repos\Library_System (1)\Dashboards\bin\Debug\Dashboards.pdb
+C:\Users\User\source\repos\Library_System (1)\Dashboards\bin\Debug\Dashboards.xml
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.vbproj.AssemblyReference.cache
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.AdminDashboard.resources
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.Resources.resources
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.vbproj.GenerateResource.cache
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.vbproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.exe
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.xml
+C:\Users\User\source\repos\Library_System (1)\Dashboards\obj\Debug\Dashboards.pdb
